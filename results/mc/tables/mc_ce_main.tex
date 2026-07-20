@@ -1,0 +1,37 @@
+\begin{table}[!t]
+\centering
+\caption{Inference for the one-step-ahead conditional expectile $c_{n+1}$.}
+\label{tab:mc-ce}
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{lllcccccccc}
+\toprule
+&&&\multicolumn{2}{c}{$n=500$}&\multicolumn{2}{c}{$n=1{,}000$}&\multicolumn{2}{c}{$n=2{,}500$}&\multicolumn{2}{c}{$n=5{,}000$}\\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+Model&Innov.&Pers.&Cov.&SD&Cov.&SD&Cov.&SD&Cov.&SD\\
+\midrule
+GARCH & Normal & Low & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.029\\[-1pt]\scriptsize(0.008)} & \shortstack{0.943\\[-1pt]\scriptsize(0.002)} & \shortstack{1.032\\[-1pt]\scriptsize(0.008)} & \shortstack{0.944\\[-1pt]\scriptsize(0.002)} & \shortstack{1.026\\[-1pt]\scriptsize(0.009)} & \shortstack{0.950\\[-1pt]\scriptsize(0.002)} & \shortstack{1.013\\[-1pt]\scriptsize(0.008)}\\
+ &  & High & \shortstack{0.942\\[-1pt]\scriptsize(0.002)} & \shortstack{1.002\\[-1pt]\scriptsize(0.009)} & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{0.972\\[-1pt]\scriptsize(0.008)} & \shortstack{0.945\\[-1pt]\scriptsize(0.002)} & \shortstack{0.974\\[-1pt]\scriptsize(0.007)} & \shortstack{0.948\\[-1pt]\scriptsize(0.002)} & \shortstack{0.981\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+ & $t_8$ & Low & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.033\\[-1pt]\scriptsize(0.010)} & \shortstack{0.945\\[-1pt]\scriptsize(0.002)} & \shortstack{1.025\\[-1pt]\scriptsize(0.009)} & \shortstack{0.947\\[-1pt]\scriptsize(0.002)} & \shortstack{1.018\\[-1pt]\scriptsize(0.008)} & \shortstack{0.953\\[-1pt]\scriptsize(0.002)} & \shortstack{0.999\\[-1pt]\scriptsize(0.007)}\\
+ &  & High & \shortstack{0.947\\[-1pt]\scriptsize(0.002)} & \shortstack{1.039\\[-1pt]\scriptsize(0.014)} & \shortstack{0.951\\[-1pt]\scriptsize(0.002)} & \shortstack{0.981\\[-1pt]\scriptsize(0.008)} & \shortstack{0.956\\[-1pt]\scriptsize(0.002)} & \shortstack{0.969\\[-1pt]\scriptsize(0.007)} & \shortstack{0.951\\[-1pt]\scriptsize(0.002)} & \shortstack{0.987\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+ & $t_4$ & Low & \shortstack{0.934\\[-1pt]\scriptsize(0.002)} & \shortstack{1.088\\[-1pt]\scriptsize(0.011)} & \shortstack{0.940\\[-1pt]\scriptsize(0.002)} & \shortstack{1.101\\[-1pt]\scriptsize(0.029)} & \shortstack{0.943\\[-1pt]\scriptsize(0.002)} & \shortstack{1.055\\[-1pt]\scriptsize(0.013)} & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.022\\[-1pt]\scriptsize(0.008)}\\
+ &  & High & \shortstack{0.940\\[-1pt]\scriptsize(0.002)} & \shortstack{1.102\\[-1pt]\scriptsize(0.014)} & \shortstack{0.948\\[-1pt]\scriptsize(0.002)} & \shortstack{1.038\\[-1pt]\scriptsize(0.013)} & \shortstack{0.954\\[-1pt]\scriptsize(0.002)} & \shortstack{1.007\\[-1pt]\scriptsize(0.012)} & \shortstack{0.950\\[-1pt]\scriptsize(0.002)} & \shortstack{1.007\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+\midrule
+GJR-GARCH & Normal & Low & \shortstack{0.947\\[-1pt]\scriptsize(0.002)} & \shortstack{1.020\\[-1pt]\scriptsize(0.008)} & \shortstack{0.944\\[-1pt]\scriptsize(0.002)} & \shortstack{1.026\\[-1pt]\scriptsize(0.008)} & \shortstack{0.948\\[-1pt]\scriptsize(0.002)} & \shortstack{1.017\\[-1pt]\scriptsize(0.007)} & \shortstack{0.951\\[-1pt]\scriptsize(0.002)} & \shortstack{1.007\\[-1pt]\scriptsize(0.007)}\\
+ &  & High & \shortstack{0.950\\[-1pt]\scriptsize(0.002)} & \shortstack{0.985\\[-1pt]\scriptsize(0.009)} & \shortstack{0.950\\[-1pt]\scriptsize(0.002)} & \shortstack{0.978\\[-1pt]\scriptsize(0.007)} & \shortstack{0.950\\[-1pt]\scriptsize(0.002)} & \shortstack{0.990\\[-1pt]\scriptsize(0.007)} & \shortstack{0.952\\[-1pt]\scriptsize(0.002)} & \shortstack{0.982\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+ & $t_8$ & Low & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.045\\[-1pt]\scriptsize(0.011)} & \shortstack{0.948\\[-1pt]\scriptsize(0.002)} & \shortstack{1.030\\[-1pt]\scriptsize(0.009)} & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.017\\[-1pt]\scriptsize(0.008)} & \shortstack{0.953\\[-1pt]\scriptsize(0.002)} & \shortstack{0.998\\[-1pt]\scriptsize(0.007)}\\
+ &  & High & \shortstack{0.949\\[-1pt]\scriptsize(0.002)} & \shortstack{1.014\\[-1pt]\scriptsize(0.011)} & \shortstack{0.953\\[-1pt]\scriptsize(0.002)} & \shortstack{0.992\\[-1pt]\scriptsize(0.008)} & \shortstack{0.953\\[-1pt]\scriptsize(0.002)} & \shortstack{0.986\\[-1pt]\scriptsize(0.007)} & \shortstack{0.949\\[-1pt]\scriptsize(0.002)} & \shortstack{0.994\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+ & $t_4$ & Low & \shortstack{0.936\\[-1pt]\scriptsize(0.002)} & \shortstack{1.086\\[-1pt]\scriptsize(0.011)} & \shortstack{0.939\\[-1pt]\scriptsize(0.002)} & \shortstack{1.082\\[-1pt]\scriptsize(0.020)} & \shortstack{0.944\\[-1pt]\scriptsize(0.002)} & \shortstack{1.048\\[-1pt]\scriptsize(0.011)} & \shortstack{0.948\\[-1pt]\scriptsize(0.002)} & \shortstack{1.020\\[-1pt]\scriptsize(0.008)}\\
+ &  & High & \shortstack{0.947\\[-1pt]\scriptsize(0.002)} & \shortstack{1.064\\[-1pt]\scriptsize(0.012)} & \shortstack{0.946\\[-1pt]\scriptsize(0.002)} & \shortstack{1.035\\[-1pt]\scriptsize(0.010)} & \shortstack{0.949\\[-1pt]\scriptsize(0.002)} & \shortstack{1.011\\[-1pt]\scriptsize(0.007)} & \shortstack{0.947\\[-1pt]\scriptsize(0.002)} & \shortstack{1.013\\[-1pt]\scriptsize(0.007)}\\
+\addlinespace[1pt]
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.98\textwidth}\footnotesize\vspace{2pt}
+\textit{Notes:} Cov. is empirical coverage of the nominal 95\% Wald interval. SD is the Monte Carlo standard deviation of the corresponding studentized statistic. Monte Carlo standard errors are reported in parentheses. Coverage standard errors use the binomial formula; SD standard errors use the delta method based on the empirical fourth central moment. Each design uses 10,000 replications.
+\end{minipage}
+\end{table}

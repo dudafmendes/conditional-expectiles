@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this replication package, please cite the software and associated article."
+type: software
+title: "Conditional Expectiles: Replication Package"
+version: 0.1.0
+date-released: 2026-07-20
+authors:
+  - family-names: Mendes
+    given-names: Eduardo
+repository-code: "https://github.com/dudafmendes/conditional-expectiles-replication"
+license: MIT
+keywords:
+  - conditional expectiles
+  - GARCH
+  - GJR-GARCH
+  - risk forecasting
+  - Monte Carlo
