@@ -1,0 +1,43 @@
+\begin{table}[t]
+\caption{Performance of the two-step estimator of the unconditional expectile\\ {\footnotesize The target is the innovation expectile $\xi_0\equiv\xp^\eta$ for $\tau=0.05$, which we estimate by $\widehat\xi_n\equiv\xpb{\widehat{\bs\theta}_n}$. For each of the 10,000 Monte Carlo replications, we report the bias and root mean squared error (RMSE) of the expectile estimator for each experimental design. The latter considers both standard GARCH and GJR-GARCH specifications, with different sample sizes and persistent levels (low and high). The innovations come either from a Gaussian distribution or from a $t$-student distribution (with 4 or 8 degrees of freedom). In addition, we also report the standard deviation of the Wald statistic $Z_{\xi,n}$ in \eqref{eq:mc-studentized} across Monte Carlo replications in the columns SD($Z_{\xi,n}$), as well as the empirical coverage of the nominal 95\% two-sided Wald interval. We compute the latter by the relative frequency at which $Z_{\xi,n}$ does not exceed, in magnitude, 1.96 across replications.}}
+\label{tab:mc-xi-wald-portrait}
+\begin{adjustbox}{width=1\textwidth}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{llr*{9}{c}}
+\toprule
+&&&\multicolumn{4}{c}{GARCH}&&\multicolumn{4}{c}{GJR-GARCH}\\
+\cline{4-7}\cline{9-12}
+distribution & persistence & sample size~~ & bias & RMSE & SD($Z_{\xi,n}$) & coverage && bias & RMSE & SD($Z_{\xi,n}$) & coverage\\
+\midrule
+normal & low & 500~~ & -0.0057 & 0.0800 & 1.067 & 0.936 && -0.0048 & 0.0682 & 1.034 & 0.941\\
+ &  & 1,000~~ & -0.0016 & 0.0378 & 1.017 & 0.945 && -0.0015 & 0.0373 & 1.010 & 0.945\\
+ &  & 2,500~~ & -0.0005 & 0.0234 & 0.995 & 0.949 && -0.0006 & 0.0234 & 0.995 & 0.949\\
+ &  & 5,000~~ & -0.0002 & 0.0166 & 0.998 & 0.949 && -0.0003 & 0.0166 & 0.998 & 0.949\\
+\addlinespace[1pt]
+ & high & 500~~ & -0.0242 & 0.2802 & 1.089 & 0.921 && -0.0183 & 0.1211 & 1.053 & 0.927\\
+ &  & 1,000~~ & -0.0092 & 0.0398 & 1.031 & 0.935 && -0.0086 & 0.0393 & 1.018 & 0.937\\
+ &  & 2,500~~ & -0.0040 & 0.0240 & 1.000 & 0.944 && -0.0036 & 0.0240 & 0.999 & 0.945\\
+ &  & 5,000~~ & -0.0020 & 0.0168 & 1.000 & 0.947 && -0.0018 & 0.0168 & 1.000 & 0.948\\
+\addlinespace[3pt]
+$t_8$ & low & 500~~ & -0.0075 & 0.1051 & 1.076 & 0.933 && -0.0088 & 0.1371 & 1.045 & 0.937\\
+ &  & 1,000~~ & -0.0032 & 0.0468 & 1.027 & 0.942 && -0.0032 & 0.0459 & 1.017 & 0.944\\
+ &  & 2,500~~ & -0.0011 & 0.0292 & 1.011 & 0.943 && -0.0013 & 0.0292 & 1.011 & 0.944\\
+ &  & 5,000~~ & -0.0004 & 0.0204 & 0.994 & 0.951 && -0.0005 & 0.0204 & 0.994 & 0.950\\
+\addlinespace[1pt]
+ & high & 500~~ & -0.0350 & 0.4175 & 1.092 & 0.917 && -0.0230 & 0.1471 & 1.064 & 0.922\\
+ &  & 1,000~~ & -0.0111 & 0.0489 & 1.035 & 0.934 && -0.0105 & 0.0484 & 1.026 & 0.939\\
+ &  & 2,500~~ & -0.0046 & 0.0298 & 1.016 & 0.940 && -0.0043 & 0.0298 & 1.015 & 0.940\\
+ &  & 5,000~~ & -0.0022 & 0.0207 & 0.997 & 0.950 && -0.0020 & 0.0207 & 0.997 & 0.949\\
+\addlinespace[3pt]
+$t_4$ & low & 500~~ & -0.0432 & 1.1820 & 1.125 & 0.918 && -0.0317 & 1.0495 & 1.064 & 0.924\\
+ &  & 1,000~~ & -0.0117 & 0.0671 & 1.065 & 0.929 && -0.0135 & 0.0653 & 1.051 & 0.930\\
+ &  & 2,500~~ & -0.0064 & 0.0445 & 1.045 & 0.928 && -0.0076 & 0.0438 & 1.043 & 0.927\\
+ &  & 5,000~~ & -0.0034 & 0.0325 & 1.037 & 0.935 && -0.0042 & 0.0319 & 1.035 & 0.936\\
+\addlinespace[1pt]
+ & high & 500~~ & -0.0820 & 2.0999 & 1.118 & 0.907 && -0.0512 & 1.4201 & 1.082 & 0.908\\
+ &  & 1,000~~ & -0.0204 & 0.0701 & 1.076 & 0.917 && -0.0218 & 0.0690 & 1.061 & 0.918\\
+ &  & 2,500~~ & -0.0101 & 0.0450 & 1.047 & 0.922 && -0.0111 & 0.0444 & 1.042 & 0.922\\
+ &  & 5,000~~ & -0.0053 & 0.0328 & 1.041 & 0.928 && -0.0060 & 0.0320 & 1.035 & 0.929\\
+\bottomrule
+\end{tabular}
+\end{adjustbox}\end{table}

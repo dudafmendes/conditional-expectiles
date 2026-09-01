@@ -160,14 +160,17 @@ function _expectile_garch_components(y::AbstractVector{<:Real}, model, tau::Real
 
     yv = collect(Float64, y)
     n = length(yv)
-    residuals, variance = GARCHModels.residuals_and_variance(yv, model)
+    # Use one shared equation-(3.19) path for the residuals, historical
+    # derivatives, and one-step-ahead variance and derivative.
+    variance, dh, h_next, dh_next =
+        GARCHModels._risk_variance_path_gradient(yv, model)
+    residuals = yv ./ sqrt.(variance)
     xi = expectile(residuals, tau)
     score_variance, score_derivative = aux_expectile_var(residuals, xi, tau)
 
-    dh, h, dh_next, h_next = GARCHModels._garch_variance_gradient(yv, model)
     D = similar(dh)
     for t in 1:n
-        @views D[t, :] .= 0.5 .* dh[t, :] ./ h[t]
+        @views D[t, :] .= 0.5 .* dh[t, :] ./ variance[t]
     end
     J = vec(sum(D, dims=1)) / n
     Jx = 0.5 .* dh_next ./ h_next

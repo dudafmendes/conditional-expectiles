@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import runpy
 import pandas as pd
 os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("MPLCONFIGDIR", str(Path(__file__).resolve().parents[2] / "results" / "mc" / ".mplconfig"))
@@ -128,8 +129,69 @@ def main_table(target, filename, caption, label):
     (TABLE_DIR / filename).write_text("\n".join(lines), encoding="utf-8")
 
 
+def detailed_xi_table(filename):
+    """Export the full-grid innovation-expectile results as an appendix longtable."""
+    header = [
+        r"\toprule",
+        r"Model & Innov. & Pers. & $n$ & Bias & RMSE & MC SD & Avg. SE & SE/SD \\",
+        r"\midrule",
+    ]
+    lines = [
+        r"\begin{longtable}{lllrrrrrr}",
+        r"\caption{Detailed inference results for the innovation expectile $\xi_0$.}",
+        r"\label{tab:mc-xi-detailed}\\",
+        *header,
+        r"\endfirsthead",
+        r"\multicolumn{9}{c}{\tablename\ \thetable\ -- continued from previous page}\\",
+        *header,
+        r"\endhead",
+        r"\midrule",
+        r"\multicolumn{9}{r}{Continued on next page}\\",
+        r"\endfoot",
+        r"\bottomrule",
+        r"\endlastfoot",
+    ]
+
+    for model_index, model in enumerate(models):
+        first_model = True
+        for dist in dists:
+            first_dist = True
+            for persistence in ["low", "high"]:
+                s = d[(d.model == model) & (d.distribution == dist) &
+                      (d.persistence == persistence)].sort_values("n")
+                for _, row in s.iterrows():
+                    lines.append(" & ".join([
+                        model if first_model else "",
+                        dist_tex[dist] if first_dist else "",
+                        persistence.capitalize(),
+                        f"{int(row['n']):,}",
+                        f"{row['xi_bias']:.4f}",
+                        f"{row['xi_rmse']:.4f}",
+                        f"{row['xi_mc_sd']:.4f}",
+                        f"{row['xi_avg_se']:.4f}",
+                        f"{row['xi_se_sd_ratio']:.4f}",
+                    ]) + r"\\")
+                    first_model = False
+                    first_dist = False
+            lines.append(r"\addlinespace[1pt]")
+        if model_index < len(models) - 1:
+            lines.append(r"\midrule")
+
+    lines += [
+        r"\addlinespace[2pt]",
+        r"\multicolumn{9}{p{0.96\textwidth}}{\footnotesize \textit{Notes:} "
+        r"Bias, RMSE, and MC SD are computed across all retained replications. Avg. SE is "
+        r"the average estimated asymptotic standard error among replications with a finite, "
+        r"strictly positive variance estimate. SE/SD is Avg. SE divided by MC SD. All quantities "
+        r"are reported on the innovation scale. Each design uses 10,000 replications.}\\",
+        r"\end{longtable}",
+    ]
+    (TABLE_DIR / filename).write_text("\n".join(lines), encoding="utf-8")
+
+
 coverage_figure("xi", "mc_xi_coverage.pdf", r"Coverage for $\xi_0$")
 coverage_figure("ce", "mc_ce_coverage.pdf", r"Coverage for $c_{n+1}$")
 main_table("xi", "mc_xi_main.tex", r"Inference for the innovation expectile $\xi_0$.", "tab:mc-xi")
 main_table("ce", "mc_ce_main.tex", r"Inference for the one-step-ahead conditional expectile $c_{n+1}$.", "tab:mc-ce")
+runpy.run_path(str(Path(__file__).with_name("make_detailed_xi_table.py")))
 print("Generated Monte Carlo figures and LaTeX tables.")

@@ -1,7 +1,112 @@
+const VARIANCE_FLOOR = 1.0e-8
+
+"""
+    _risk_variance_path_gradient(data, model)
+
+Compute the common finite-history conditional-variance path used by the risk
+measure estimators and its analytical parameter gradients. For symmetric GARCH,
+this is Gao and Song's (2008) equation (3.19): unavailable returns are truncated,
+while unavailable conditional variances equal
+`omega / (1 - sum(beta))`. The same initialization is applied to the GJR
+extension, with unavailable leverage terms set to zero.
+
+The parameter order is `[omega, alpha..., beta..., gamma]`. Returns are
+`(h, dh, h_next, dh_next)`.
+"""
+function _risk_variance_path_gradient(
+    data::AbstractVector{<:Real}, model::GARCHModel,
+)
+    y = collect(Float64, data)
+    n = length(y)
+    p, q = length(model.α), length(model.β)
+    gjr = model.γ !== nothing
+    k = 1 + p + q + (gjr ? 1 : 0)
+    h = zeros(n)
+    dh = zeros(n, k)
+
+    beta_sum = sum(model.β)
+    intercept_denominator = 1.0 - beta_sum
+    intercept_denominator > 0 || throw(ArgumentError(
+        "the finite-history risk recursion requires sum(beta) < 1",
+    ))
+    h_initial = model.ω / intercept_denominator
+    dh_initial = zeros(k)
+    dh_initial[1] = 1.0 / intercept_denominator
+    for j in 1:q
+        dh_initial[1 + p + j] = model.ω / intercept_denominator^2
+    end
+
+    for t in 1:n
+        value = model.ω
+        gradient = zeros(k)
+        gradient[1] = 1.0
+
+        for i in 1:p
+            if t - i > 0
+                lagged_square = y[t - i]^2
+                value += model.α[i] * lagged_square
+                gradient[1 + i] += lagged_square
+            end
+        end
+        for j in 1:q
+            observed_lag = t - j > 0
+            lagged_variance = observed_lag ? h[t - j] : h_initial
+            lagged_gradient = observed_lag ? view(dh, t - j, :) : dh_initial
+            value += model.β[j] * lagged_variance
+            gradient[1 + p + j] += lagged_variance
+            gradient .+= model.β[j] .* lagged_gradient
+        end
+        if gjr && t > 1 && y[t - 1] < 0
+            lagged_square = y[t - 1]^2
+            value += model.γ * lagged_square
+            gradient[end] += lagged_square
+        end
+
+        if value <= VARIANCE_FLOOR
+            h[t] = VARIANCE_FLOOR
+            dh[t, :] .= 0.0
+        else
+            h[t] = value
+            dh[t, :] .= gradient
+        end
+    end
+
+    value_next = model.ω
+    gradient_next = zeros(k)
+    gradient_next[1] = 1.0
+    for i in 1:p
+        if n + 1 - i > 0
+            lagged_square = y[n + 1 - i]^2
+            value_next += model.α[i] * lagged_square
+            gradient_next[1 + i] += lagged_square
+        end
+    end
+    for j in 1:q
+        observed_lag = n + 1 - j > 0
+        lagged_variance = observed_lag ? h[n + 1 - j] : h_initial
+        lagged_gradient = observed_lag ? view(dh, n + 1 - j, :) : dh_initial
+        value_next += model.β[j] * lagged_variance
+        gradient_next[1 + p + j] += lagged_variance
+        gradient_next .+= model.β[j] .* lagged_gradient
+    end
+    if gjr && n > 0 && y[n] < 0
+        lagged_square = y[n]^2
+        value_next += model.γ * lagged_square
+        gradient_next[end] += lagged_square
+    end
+    if value_next <= VARIANCE_FLOOR
+        value_next = VARIANCE_FLOOR
+        gradient_next .= 0.0
+    end
+
+    return h, dh, value_next, gradient_next
+end
+
 """
     forecast_variance(data::Vector{Float64}, model::GARCHModel)
 
-Forecast the conditional variance one step ahead given observed data and a fitted GARCHModel.
+Forecast the conditional variance one step ahead using the common finite-history
+risk-measure recursion based on Gao and Song's equation (3.19).
 
 # Arguments
 - `data::Vector{Float64}`: Observed time series data (e.g., returns or residuals).
@@ -14,18 +119,8 @@ Forecast the conditional variance one step ahead given observed data and a fitte
 σ2_next = forecast_variance(data, model)
 """
 function forecast_variance(data::Vector{Float64}, model::GARCHModel)
-    n = length(data)
-    p = model.α === nothing ? 0 : length(model.α)
-    q = model.β === nothing ? 0 : length(model.β)
-    γ = model.γ
-    # Compute last p residuals and last q variances
-    arch_sum = p == 0 ? 0.0 : sum(model.α[i] * (n-i+1 > 0 ? data[n-i+1]^2 : 0.0) for i in 1:p)
-    # Compute conditional variances up to n
-    σ2 = garch_variance(data, model)
-    garch_sum = q == 0 ? 0.0 : sum(model.β[j] * (n-j+1 > 0 ? σ2[n-j+1] : 0.0) for j in 1:q)
-    gjr_sum = γ === nothing ? 0.0 : γ * (n > 0 && data[n] < 0 ? data[n]^2 : 0.0)
-    σ2_next = model.ω + arch_sum + garch_sum + gjr_sum
-    return max(σ2_next, 1e-8)
+    _, _, σ2_next, _ = _risk_variance_path_gradient(data, model)
+    return σ2_next
 end
 
 """
@@ -143,9 +238,15 @@ function garch_variance_fixed(X::AbstractMatrix, model::GARCHModel; hot_start::B
 end
 
 """
-Return conditional variances given a `GARCHModel`.
+Return conditional variances given a `GARCHModel`. By default, the path uses the
+common finite-history risk-measure initialization based on Gao and Song's equation
+(3.19). Set `hot_start=true` to retain the legacy sample-variance initialization.
 """
 function garch_variance(data::AbstractVector, model::GARCHModel; hot_start::Bool=false)
+    if !hot_start
+        σ2, _, _, _ = _risk_variance_path_gradient(data, model)
+        return σ2
+    end
     p = model.α === nothing ? 0 : length(model.α)
     X = garch_design_matrix(data, p)
     σ2 =  garch_variance_fixed(X, model; hot_start=hot_start)

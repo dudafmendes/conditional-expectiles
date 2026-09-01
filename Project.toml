@@ -6,6 +6,7 @@ authors = ["Eduardo Mendes"]
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 ARCHModels = "6d3278bc-c23a-5105-85e5-0d57d2bf684f"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
@@ -16,6 +17,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 ARCHModels = "2.7.0"
+CairoMakie = "0.15.13"
 JLD2 = "0.6.5"
 julia = "1.12"
 

@@ -7,6 +7,7 @@ using Distributions
 using ConditionalExpectiles
 using ConditionalExpectiles.GARCHModels
 using ConditionalExpectiles.Expectiles
+using ConditionalExpectiles.GaoSongRisk
 
 const Z975 = quantile(Normal(), 0.975)
 
@@ -25,6 +26,10 @@ Monte Carlo specification container used by the MC validation scripts.
 - `burnout::Int`: Burn-in observations discarded in simulation.
 - `innovation_dist::Distribution`: Innovation distribution used in simulation.
 - `label::String`: Optional scenario label used in reporting.
+- `risk_alpha`: Optional lower-tail probability. When provided, each replication
+  also computes Gao--Song two-step VaR and ES intervals.
+- `risk_levels`: Common lower-tail levels used for XP, VaR, and ES. The joint
+  experiment enforces `alpha = delta = tau` at every value in this vector.
 """
 Base.@kwdef struct MCSpec
     model::GARCHModel
@@ -36,8 +41,64 @@ Base.@kwdef struct MCSpec
     truth_mc::Int = 200_000
     burnout::Int = 500
     innovation_dist::Distribution = Normal()
+    risk_alpha::Union{Nothing,Float64} = nothing
+    risk_levels::Vector{Float64} = [0.01, 0.05]
 
     label::String = ""
+end
+
+function _upper_first_moment(d::Distribution, point::Real)
+    if d isa Normal
+        z = (point - d.μ) / d.σ
+        return d.σ * pdf(Normal(), z) + d.μ * (1 - cdf(Normal(), z))
+    elseif d isa LocationScale && d.ρ isa TDist
+        nu = d.ρ.ν
+        z = (point - d.μ) / d.σ
+        upper_z_first = ((nu + z^2) / (nu - 1)) * pdf(d.ρ, z)
+        return d.μ * (1 - cdf(d.ρ, z)) + d.σ * upper_z_first
+    end
+    error("No deterministic truncated-first-moment formula for $(typeof(d)).")
+end
+
+"""Population expectile for the supported innovation distributions."""
+function innovation_expectile(d::Distribution, tau::Real)
+    0 < tau < 1 || throw(ArgumentError("tau must lie strictly between zero and one"))
+
+    function balance(e)
+        upper_first = _upper_first_moment(d, e)
+        right = upper_first - e * (1 - cdf(d, e))
+        left = e * cdf(d, e) - (mean(d) - upper_first)
+        return tau * right - (1 - tau) * left
+    end
+
+    lo, hi = quantile(d, 1e-8), quantile(d, 1 - 1e-8)
+    for _ in 1:200
+        mid = (lo + hi) / 2
+        if balance(mid) > 0
+            lo = mid
+        else
+            hi = mid
+        end
+    end
+    return (lo + hi) / 2
+end
+
+"""Population expectile level whose expectile equals the `alpha` quantile."""
+function population_tau_for_quantile(d::Distribution, alpha::Real)
+    0 < alpha < 1 || throw(ArgumentError("alpha must lie strictly between zero and one"))
+    q = quantile(d, alpha)
+    upper_first = _upper_first_moment(d, q)
+    below = q * cdf(d, q) - (mean(d) - upper_first)
+    above = upper_first - q * (1 - cdf(d, q))
+    return below / (below + above)
+end
+
+"""Population lower-tail conditional mean at probability `delta`."""
+function population_lower_es(d::Distribution, delta::Real)
+    0 < delta < 1 || throw(ArgumentError("delta must lie strictly between zero and one"))
+    q = quantile(d, delta)
+    lower_first = mean(d) - _upper_first_moment(d, q)
+    return lower_first / cdf(d, q)
 end
 
 """
@@ -97,39 +158,7 @@ Estimate the population innovation expectile under the specification's innovatio
 distribution using Monte Carlo integration.
 """
 function true_innovation_expectile(spec::MCSpec)
-    d = spec.innovation_dist
-    tau = spec.τ
-
-    function balance(e)
-        if d isa Normal
-            z = (e - d.μ) / d.σ
-            upper_first = d.σ * pdf(Normal(), z) + d.μ * (1 - cdf(Normal(), z))
-            right = upper_first - e * (1 - cdf(d, e))
-            left = e * cdf(d, e) - (d.μ - upper_first)
-            return tau * right - (1 - tau) * left
-        elseif d isa LocationScale && d.ρ isa TDist
-            nu = d.ρ.ν
-            z = (e - d.μ) / d.σ
-            base = d.ρ
-            upper_z_first = ((nu + z^2) / (nu - 1)) * pdf(base, z)
-            upper_first = d.μ * (1 - cdf(base, z)) + d.σ * upper_z_first
-            right = upper_first - e * (1 - cdf(d, e))
-            left = e * cdf(d, e) - (mean(d) - upper_first)
-            return tau * right - (1 - tau) * left
-        end
-        error("No deterministic population-expectile formula for $(typeof(d)).")
-    end
-
-    lo, hi = quantile(d, 1e-8), quantile(d, 1 - 1e-8)
-    for _ in 1:200
-        mid = (lo + hi) / 2
-        if balance(mid) > 0
-            lo = mid
-        else
-            hi = mid
-        end
-    end
-    return (lo + hi) / 2
+    return innovation_expectile(spec.innovation_dist, spec.τ)
 end
 
 """
@@ -201,6 +230,11 @@ function mc_replication(spec::MCSpec, true_xi::Float64, rep::Int)
     ce_length = ce_valid ? ce_hi - ce_lo : NaN
     ce_z = ce_valid && ce_se > 0 ? (ce_hat - ce_true) / ce_se : NaN
 
+    # Optional VaR/ES experiment. No tail level is inferred from the expectile
+    # level: callers must explicitly choose risk_alpha for the desired design.
+    gao_song_risk = spec.risk_alpha === nothing ? nothing :
+        gao_song_fhs_intervals(y, fit, spec.risk_alpha; ci_level=0.95)
+
     return (
         θ_hat = θ_hat,
         ω_hat = fit.ω,
@@ -230,6 +264,7 @@ function mc_replication(spec::MCSpec, true_xi::Float64, rep::Int)
         ce_lower_miss = ce_lower_miss,
         ce_upper_miss = ce_upper_miss,
         ce_length = ce_length,
-        ce_z = ce_z
+        ce_z = ce_z,
+        gao_song_risk = gao_song_risk
     )
 end

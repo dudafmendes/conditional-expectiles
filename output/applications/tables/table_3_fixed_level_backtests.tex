@@ -1,0 +1,19 @@
+\begin{table}[!ht]
+\vspace*{1em}\centering\caption{Frequency of value at risk and expectile forecast exceedances at $\alpha=\tau=0.01$\\ {\footnotesize We report the expected and realized number of exceedances for the one-step-ahead forecasts of the value at risk and expectile based on rolling windows of 1,000 observations. Exceedances occur if realized loss exceeds the tail risk measure. Apart from the corresponding relative frequency (i.e., number of realized exceedances over number of out-of-sample forecasts), we also document the p-values of the coverage tests for the value at risk and the normal-approximation p-value of the residual test for the expectile.}}
+\label{tab:app_backtest}
+\begin{tabular}{lccrccrccrcc}
+\toprule
+ & \multicolumn{2}{c}{BNB} && \multicolumn{2}{c}{BTC} && \multicolumn{2}{c}{ETH} && \multicolumn{2}{c}{EUR}\\
+\cline{2-3}\cline{5-6}\cline{8-9}\cline{11-12}
+daily exceedances & VaR & XP && VaR & XP && VaR & XP && VaR & XP\\
+\midrule
+expected & 12.43 & 12.43 &  & 19.21 & 19.21 &  & 12.43 & 12.43 &  & 10.82 & 10.82 \\
+realized & 10 & 16 &  & 20 & 36 &  & 8 & 19 &  & 14 & 36 \\
+relative frequency & 0.80\% & 1.29\% &  & 1.04\% & 1.87\% &  & 0.64\% & 1.53\% &  & 1.29\% & 3.33\% \\
+coverage tests\\
+~~~~unconditional & 0.47 &  &  & 0.86 &  &  & 0.18 &  &  & 0.35 &  \\
+~~~~conditional & 0.71 &  &  & 0.80 &  &  & 0.38 &  &  & 0.54 &  \\
+~~~~duration & 0.03 &  &  & 0.30 &  &  & 0.02 &  &  & 0.81 &  \\
+residual test &  & 0.48 &  &  & 0.79 &  &  & 0.06 &  &  & 0.98 \\
+\bottomrule
+\end{tabular}\end{table}

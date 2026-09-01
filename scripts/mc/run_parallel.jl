@@ -17,6 +17,7 @@ function run_design(spec::MCSpec)
         "n" => spec.n,
         "n_sim" => spec.n_sim,
         "tau" => spec.τ,
+        "risk_alpha" => spec.risk_alpha,
         "dist" => dist_label(spec),
         "persistence" => persistence_label(spec),
         "omega" => spec.model.ω,

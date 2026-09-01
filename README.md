@@ -1,29 +1,36 @@
 # Conditional Expectiles: replication package
 
-This repository contains Eduardo Mendes's Julia implementation, Monte Carlo experiments, and empirical financial application for conditional expectiles. It separates source, tests, workflows, inputs, and results; locks the Julia environment; and uses deterministic seeds.
+This repository contains the Julia implementation, Monte Carlo experiments, and empirical currency-risk application for conditional expectiles (XP), value at risk (VaR), and expected shortfall (ES). It includes reusable GARCH/GJR-GARCH estimation code, Gao--Song filtered-historical-simulation inference, deterministic and resumable simulations, application backtests, and programmatic paper tables and figures.
 
-## Contents
+## Repository map
 
 | Path | Purpose |
 | --- | --- |
-| `src/` | GARCH/GJR-GARCH and expectile code |
-| `test/` | Unit and numerical tests |
-| `scripts/mc/` | Monte Carlo workflows and exports |
-| `scripts/applications_crypto.jl` | Rolling risk application |
-| `data/` | Versioned application input |
-| `results/mc/` | Monte Carlo reference outputs |
-| `output/applications/` | Application reference outputs |
+| `src/` | GARCH/GJR-GARCH, expectile, and Gao--Song VaR/ES inference code |
+| `test/` | Mathematical, numerical, and integration tests |
+| `scripts/mc/` | Joint XP/VaR/ES Monte Carlo runners and artifact builders |
+| `scripts/applications_crypto.jl` | Rolling four-currency risk forecasts |
+| `scripts/application_backtests.jl` | Fixed-level VaR, ES, and XP diagnostics |
+| `scripts/build_application_tables.jl` | Application Tables 1--3 |
+| `scripts/build_selected_application_figures.jl` | Application Figures 1--5 |
+| `data/crypto_data.csv` | Versioned application input |
+| `results/mc/` | Lightweight Monte Carlo tables, summaries, and figures |
+| `output/applications/` | Application forecasts, tests, tables, and figures |
 
-The manuscript under `docs/`, previews, caches, and full raw Monte Carlo grids are excluded. Each full raw grid is about 275 MB and can be regenerated.
+The manuscript under `docs/`, local backups, temporary previews, and replication-level Monte Carlo CSVs are excluded from Git. The complete joint CSV is about 839 MB and is deterministically regenerable.
 
 ## Requirements and setup
 
-Use Julia 1.12.6; the exact dependency graph is in `Manifest.toml`. Python 3.10+ is needed only for paper figures.
+- Julia 1.12.6; `Project.toml` declares direct dependencies and `Manifest.toml` locks the complete environment.
+- Python 3.10+ for Monte Carlo post-processing.
+- Multiple CPU cores and substantial storage for the complete simulation and application.
+
+From the repository root:
 
 ```console
 julia --project=. -e "using Pkg; Pkg.instantiate()"
 python -m venv .venv
-# activate .venv, then:
+# Activate .venv, then:
 python -m pip install -r requirements.txt
 ```
 
@@ -32,42 +39,71 @@ python -m pip install -r requirements.txt
 ```console
 julia --project=. -e "using Pkg; Pkg.test()"
 julia -t auto --project=. scripts/mc/smoke_test.jl
+julia -t auto --project=. scripts/mc/run_joint_smoke.jl
 ```
+
+The last command writes an ignored replication-level smoke CSV under `results/mc/raw/`. Set `MC_SMOKE_REPS` or `MC_SMOKE_OUTPUT` to change its size or name.
 
 ## Monte Carlo replication
 
-The paper design has 48 scenarios spanning GARCH/GJR-GARCH, Normal/Student-t innovations, low/high persistence, and four sample sizes. Each paper scenario uses 10,000 replications. Replication `r` uses `MersenneTwister(24681 + r)`, so thread scheduling does not change samples.
+The paper experiment contains 48 structural designs: GARCH and correctly specified GJR-GARCH models; Normal, standardized Student-t(8), and standardized Student-t(4) innovations; low and high persistence; and sample sizes 500, 1,000, 2,500, and 5,000. Each fitted replication is reused to evaluate:
 
-Run the 16-design pilot (2,000 replications by default):
+- innovation and one-step conditional XP at `tau = 0.01` and `0.05`;
+- one-step VaR at `alpha = 0.01` and `0.05`;
+- one-step ES at `delta = 0.01` and `0.05`.
+
+Thus `alpha = delta = tau` at each comparison level. The full grid uses 10,000 replications per design. Replication `r` uses `MersenneTwister(24681 + r)`, making simulated samples independent of thread scheduling. Every success or failure is immediately flushed to CSV with its seed, estimates, root-n variances, intervals, coverage indicators, diagnostics, and interval-length ratios.
+
+Run the resumable 16-design pilot (50 replications by default):
 
 ```console
 julia -t auto --project=. scripts/mc/run_pilot.jl
 ```
 
-For a fast check, set `MC_PILOT_REPS=20` first. Run the full experiment and exports with:
+Configure it with `MC_PILOT_REPS`, `MC_PILOT_OUTPUT`, and `MC_RETRY_FAILED`. Run or resume the complete experiment with:
 
 ```console
 julia -t auto --project=. scripts/mc/mc_runner.jl
-julia --project=. scripts/mc/export_paper_results.jl
-python scripts/mc/make_paper_artifacts.py
 ```
 
-The first command creates `results/mc/raw/mc_grid_results_48.jld2`; expect a long compute-intensive run and a file around 275 MB. Summaries and figures appear under `results/mc/tables/` and `results/mc/figures/`. Compare numerical results within floating-point tolerance, not byte-for-byte.
+The full output is `results/mc/raw/mc_joint_common_levels_replications.csv`. Repeating the command skips completed design/replication pairs; set `MC_RETRY_FAILED=true` to retry failures while retaining their earlier audit rows.
 
-## Application replication
+Generate paper tables and interval-width comparisons from successful rows:
 
-The sole input is `data/crypto_data.csv`, covering the S&P 500, EUR/USD, Bitcoin, Ether, BNB, and Cardano. For a short check set `APP_MAX_WINDOWS=20`; omit it for the complete run:
+```console
+python scripts/mc/make_joint_risk_artifacts.py
+julia --project=. scripts/mc/plot_interval_length_ratios.jl
+```
+
+This creates XP tables at 1% and 5%, summary CSVs, and XP/VaR and XP/ES interval-length ratio figures under `results/mc/tables/` and `results/mc/figures/`. See `scripts/mc/README.md` for restart semantics, schema details, and custom-run examples.
+
+## Empirical application replication
+
+The application uses `data/crypto_data.csv` and retains BNB, BTC, ETH, and EUR/USD. It fits rolling GJR-GARCH models using 1,000 observations and produces one-step forecasts and 95% intervals. Defaults are:
+
+- VaR probability `APP_VAR_ALPHA=0.01`;
+- primary ES probability `APP_ES_ALPHA=0.025` plus ES at 1% for common-level comparisons;
+- fixed XP level `APP_FIXED_XP_TAU=0.01`;
+- confidence level `APP_CI_LEVEL=0.95`.
+
+Run the complete data-to-artifact pipeline in this order:
 
 ```console
 julia -t auto --project=. scripts/applications_crypto.jl
-python scripts/convert_application_svgs.py
-python scripts/build_application_preview_pdf.py
+julia --project=. scripts/application_backtests.jl
+julia --project=. scripts/build_application_tables.jl
+julia --project=. scripts/build_selected_application_figures.jl
 ```
 
-Defaults are a 1,000-observation window, expectile and quantile levels of 0.01, and 90% confidence intervals. Override with `APP_WINDOW`, `APP_TAU`, `APP_ALPHA`, and `APP_CI_LEVEL`. Outputs appear in `output/applications/`.
+For a quick forecasting check, set `APP_MAX_WINDOWS=20` before the first command. Other overrides are `APP_WINDOW`, `APP_VAR_ALPHA`, `APP_ES_ALPHA`, `APP_ES_ALPHA_1PCT`, `APP_FIXED_XP_TAU`, and `APP_CI_LEVEL`.
 
-Expected Monte Carlo outputs include `mc_inference_summary.csv`, `mc_xi_main.tex`, `mc_ce_main.tex`, and coverage figures. Application outputs include descriptive statistics, rolling forecasts, backtests, matched gain-loss summaries, and plots.
+The pipeline writes:
 
-See `REPRODUCIBILITY.md` for the audit and release checklist, `data/README.md` for data caveats, and `CITATION.cff` for citation metadata. Report problems with the OS, Julia version, command, and complete error.
+- `output/applications/rolling_risk_forecasts.csv` and descriptive summaries;
+- fixed-level calibration and residual-identification tests under `output/applications/backtests/`;
+- manuscript-ready LaTeX tables under `output/applications/tables/`;
+- color and black-and-white vector PDFs under `output/applications/paper_figures/`.
+
+The input-data provenance caveat is recorded in `data/README.md`. See `REPRODUCIBILITY.md` for the audit and release checklist and `CITATION.cff` for citation metadata. Report problems with the OS, Julia version, command, thread count, and complete error message.
 
 Copyright (c) 2026 Eduardo Mendes. See `LICENSE`.

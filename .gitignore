@@ -23,10 +23,14 @@ docs/
 output/mc_preview/
 output/applications/*preview*
 results/mc/.mplconfig/
+output/pdf/
+tmp/
+backups/
 
 # Full Monte Carlo draws are generated artifacts and exceed GitHub's file limit.
 # The small pilot file remains versioned as a checkable example.
 results/mc/raw/mc_grid_results*.jld2
+results/mc/raw/*.csv
 
 # OS metadata
 .DS_Store

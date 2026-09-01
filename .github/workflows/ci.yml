@@ -18,3 +18,7 @@ jobs:
       - run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
       - run: julia --project=. -e 'using Pkg; Pkg.test()'
       - run: julia -t auto --project=. scripts/mc/smoke_test.jl
+      - run: julia -t auto --project=. scripts/mc/run_joint_smoke.jl
+        env:
+          MC_SMOKE_REPS: '1'
+          MC_SMOKE_OUTPUT: mc_joint_ci_smoke.csv
