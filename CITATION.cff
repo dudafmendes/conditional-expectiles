@@ -7,7 +7,7 @@ date-released: 2026-07-20
 authors:
   - family-names: Mendes
     given-names: Eduardo
-repository-code: "https://github.com/dudafmendes/conditional-expectiles-replication"
+repository-code: "https://github.com/dudafmendes/conditional-expectiles"
 license: MIT
 keywords:
   - conditional expectiles
