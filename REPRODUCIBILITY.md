@@ -31,8 +31,8 @@ This package follows guidance from the Social Science Data Editors, CodeRefinery
 
 - `Project.toml` and `Manifest.toml` record the Julia environment; `requirements.txt` records direct Python post-processing dependencies.
 - Full Monte Carlo rows are written immediately to `results/mc/raw/mc_joint_common_levels_replications.csv`. The runner is resumable and retains failure records.
-- Replication-level CSVs (currently up to about 839 MB), legacy raw grids, `backups/`, `tmp/`, manuscript files, caches, and preview PDFs are not part of Git history.
-- Lightweight summary CSVs, LaTeX tables, SVGs, and vector/raster paper figures are versioned as reference artifacts.
+- All generated `results/` and `output/` artifacts, including replication-level CSVs currently up to about 839 MB, are excluded from Git and reconstructed from the versioned code and dataset.
+- Legacy raw grids, `backups/`, `tmp/`, manuscript files, caches, and preview PDFs are also not part of the replication repository.
 - Application input data are not modified in place. All application products are reconstructed from `data/crypto_data.csv` by the documented script sequence.
 
 ## Scope and unresolved release items

@@ -14,10 +14,10 @@ This repository contains the Julia implementation, Monte Carlo experiments, and 
 | `scripts/build_application_tables.jl` | Application Tables 1--3 |
 | `scripts/build_selected_application_figures.jl` | Application Figures 1--5 |
 | `data/crypto_data.csv` | Versioned application input |
-| `results/mc/` | Lightweight Monte Carlo tables, summaries, and figures |
-| `output/applications/` | Application forecasts, tests, tables, and figures |
+| `results/mc/` | Generated Monte Carlo rows, tables, and figures (ignored by Git) |
+| `output/applications/` | Generated application forecasts and artifacts (ignored by Git) |
 
-The manuscript under `docs/`, local backups, temporary previews, and replication-level Monte Carlo CSVs are excluded from Git. The complete joint CSV is about 839 MB and is deterministically regenerable.
+Only code, tests, environments, documentation, and the input dataset are versioned. The manuscript under `docs/`, local backups, temporary files, and all generated `results/` and `output/` artifacts are excluded from Git. The complete joint CSV is about 839 MB and is deterministically regenerable.
 
 ## Requirements and setup
 

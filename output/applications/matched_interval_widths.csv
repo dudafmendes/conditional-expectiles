@@ -1,7 +1,0 @@
-ticker,windows,median_xp_width,median_var_matched_width,median_es_matched_width,var_xp_ratio,es_xp_ratio,valid_var_windows,valid_es_windows
-SPX,1011,0.76,0.63,1.06,0.83,1.40,1011,1011
-EUR,1082,0.30,0.24,0.45,0.77,1.48,1063,1082
-BTC,1921,3.73,3.02,5.65,0.81,1.52,1921,1921
-ETH,1243,4.50,3.73,7.06,0.83,1.57,1243,1243
-BNB,1243,4.56,3.27,7.65,0.72,1.68,1243,1243
-ADA,1243,4.13,2.76,6.04,0.67,1.46,1243,1243

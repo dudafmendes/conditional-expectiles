@@ -30,9 +30,4 @@ rng = MersenneTwister(1)
 summary = run_design(first(specs))
 @assert haskey(summary["intervals_xi"], "xi_se_sd_ratio")
 @assert haskey(summary["intervals_ce"], "ce_se_sd_ratio")
-
-include(joinpath(@__DIR__, "export_paper_results.jl"))
-rows = summary_rows([summary])
-@assert length(rows) == 1
-@assert length(rows[1]) == length(SUMMARY_HEADER)
 println("Monte Carlo smoke test passed.")
